@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/cygdrive/d/DHBW/Semester I/Programmieren I/Programmentwurf/Sources/Travelling-Salesman-C/main.c" "/cygdrive/d/DHBW/Semester I/Programmieren I/Programmentwurf/Sources/Travelling-Salesman-C/cmake-build-debug/CMakeFiles/Travelling_Salesman_C.dir/main.c.o"
+  "C:/Users/King Lennard/CLionProjects/Travelling-Salesman-C/main.c" "C:/Users/King Lennard/CLionProjects/Travelling-Salesman-C/cmake-build-debug/CMakeFiles/Travelling_Salesman_C.dir/main.c.obj"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

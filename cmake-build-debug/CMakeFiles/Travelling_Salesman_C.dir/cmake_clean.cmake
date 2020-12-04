@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Travelling_Salesman_C.dir/main.c.o"
+  "CMakeFiles/Travelling_Salesman_C.dir/main.c.obj"
   "Travelling_Salesman_C.exe"
+  "Travelling_Salesman_C.exe.manifest"
   "Travelling_Salesman_C.pdb"
   "libTravelling_Salesman_C.dll.a"
 )
