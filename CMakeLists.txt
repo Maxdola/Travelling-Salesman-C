@@ -3,4 +3,4 @@ project(Travelling_Salesman_C C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(Travelling_Salesman_C main.c)
+add_executable(Travelling_Salesman_C Tests/test_01.c main.c)

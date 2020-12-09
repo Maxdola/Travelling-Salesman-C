@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
     int from;
@@ -12,16 +13,27 @@ typedef struct {
     Distance *distance;
 } DistanceTable;
 
-void readFile();
-
-int main() {
-    readFile();
-    return 0;
+//FIXME is null when file is protected/read-only (handle Null Error somehow)
+FILE* getFile(char* path) {
+    return fopen(path, "r+");
 }
 
-void readFile() {
-    FILE *data;
-    data = fopen("Data.txt", "r");
-    //Code here
-    fclose(data);
+void parseData(FILE* file) {
+
+}
+
+
+//TODO implement selection between program options
+int main() {
+    FILE* fptr;
+    fptr = getFile("../data.txt");
+
+    if(fptr == NULL){
+        printf("Error!");
+        exit(1);
+    }
+
+    fclose(fptr);
+
+    return 0;
 }
