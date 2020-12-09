@@ -1,3 +1,0 @@
-"L:\Program Files\JetBrains\CLion 2020.2.5\bin\cmake\win\bin\cmake.exe" -E rm -f CMakeFiles\Travelling_Salesman_C.dir/objects.a
-L:\MinGW\bin\ar.exe cr CMakeFiles\Travelling_Salesman_C.dir/objects.a @CMakeFiles\Travelling_Salesman_C.dir\objects1.rsp
-L:\MinGW\bin\gcc.exe -g   -Wl,--whole-archive CMakeFiles\Travelling_Salesman_C.dir/objects.a -Wl,--no-whole-archive  -o Travelling_Salesman_C.exe -Wl,--out-implib,libTravelling_Salesman_C.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Travelling_Salesman_C.dir\linklibs.rsp
