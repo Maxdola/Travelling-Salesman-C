@@ -22,9 +22,7 @@ void parseData(FILE* file) {
 
 }
 
-
-//TODO implement selection between program options
-int main() {
+void readFile() {
     FILE* fptr;
     fptr = getFile("../data.txt");
 
@@ -34,6 +32,28 @@ int main() {
     }
 
     fclose(fptr);
+}
 
+int main() {
+    int end = 0;
+    int switchNum = -1;
+    while (end == 0) {
+        printf("-------------\nOperations:\n1. End Program\n\nType the number of your operation:");
+        scanf("%d", &switchNum);
+        while ( getchar() != '\n' );
+        switch (switchNum) {
+            case 1:
+                printf("Ending Program...\n");
+                end = 1;
+                break;
+            case -1:
+                printf("This Input was not valid.\n");
+                break;
+            default:
+                printf("This Operation does not exist.\n");
+                break;
+        }
+        switchNum = -1;
+    }
     return 0;
 }
