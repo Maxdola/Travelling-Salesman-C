@@ -56,7 +56,32 @@ void printTable(DistanceTable* table) {
 
 }
 
+int testing(int* values, const char* string, int overwrite) {
+    int size = (sizeof(&values) / sizeof(int));
+    int i = 0;
+    while(string[i] != 0) {
+        if (string[i] < 58 && string[i] > 47) {
+            int value = 0;
+            while (string[i] < 58 && string[i] > 47) {
+                value = (value * 10) /*Pushes to the left to make room for the new number*/ +
+                        (string[i++] - 48); //Places the new number to its position
+            }
+            if (overwrite == 0) values = realloc(values, (++size) * sizeof(int));
+            else overwrite = 0;
+            values[size-1] = value;
+            //printf("%d\n", value);
+        } else {
+            i++;
+        }
+    }
+    return size;
+}
+
 int main() {
+    int* ptr = malloc(1 * sizeof(int));
+    int size = testing(ptr,"11053 25490  23 1224 5 12", 1);
+    for(int i = 0; i < size; i++) printf("%d\n",ptr[i]);
+    free(ptr);
     DistanceTable* table = NULL;
     int end = 0;
     while (end == 0) {
