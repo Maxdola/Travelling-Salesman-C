@@ -14,11 +14,13 @@ typedef struct {
     Distance *distance;
 } DistanceTable;
 
-int countWords(const char* string, int stringLength) {
+int countWords(const char *string, int stringLength) {
     int a = 0;
-    for (int i = 0; i < stringLength-1; i++) {
-        if ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
-            while ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+    for (int i = 0; i < stringLength - 1; i++) {
+        if ((string[i] < 91 && string[i] > 64) || (string[i] < 123 && string[i] > 96) || string[i] == 45 ||
+            string[i] == 95) {
+            while ((string[i] < 91 && string[i] > 64) || (string[i] < 123 && string[i] > 96) || string[i] == 45 ||
+                   string[i] == 95) {
                 i++;
             }
             a++;
@@ -27,12 +29,14 @@ int countWords(const char* string, int stringLength) {
     return a;
 }
 
-void strToStrPtr(char** strPtr, const char* string, int stringLength) {
+void strToStrPtr(char **strPtr, const char *string, int stringLength) {
     int counter = 0;
-    for (int i = 0; i < stringLength-1; i++) {
-        if ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+    for (int i = 0; i < stringLength - 1; i++) {
+        if ((string[i] < 91 && string[i] > 64) || (string[i] < 123 && string[i] > 96) || string[i] == 45 ||
+            string[i] == 95) {
             int j = 0;
-            while ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+            while ((string[i] < 91 && string[i] > 64) || (string[i] < 123 && string[i] > 96) || string[i] == 45 ||
+                   string[i] == 95) {
                 strPtr[counter][j++] = string[i++];
             }
             strPtr[counter][j] = '\0';
@@ -41,44 +45,43 @@ void strToStrPtr(char** strPtr, const char* string, int stringLength) {
     }
 }
 
-int strToIntPtr(Distance* distances, const char* string, int city, int n) {
+int strToIntPtr(Distance *distances, const char *string, int city, int n) {
     int size = 1;
     int i = 0;
-    while(string[i] != 0) {
+    while (string[i] != 0) {
         if (string[i] < 58 && string[i] > 47) {
             int value = 0;
             while (string[i] < 58 && string[i] > 47) {
                 value = (value * 10) /*Pushes to the left to make room for the new number*/ +
                         (string[i++] - 48); //Places the new number to its position
             }
-            Distance dist = {city,size-1,value};
-            distances[(city*n)+(size)-1] = dist;
+            Distance dist = {city, size - 1, value};
+            distances[(city * n) + (size) - 1] = dist;
             size++;
         } else {
             i++;
         }
     }
-    return size-1;
+    return size - 1;
 }
 
-FILE *getFile(char *path) {
-    return fopen(path, "r+");
+FILE *getFile(char *path, char *mode) {
+    return fopen(path, mode);
 }
 
-DistanceTable* parseData(FILE *file, DistanceTable* distanceTable) {
+DistanceTable *parseData(FILE *file, DistanceTable *distanceTable) {
     int currentChar;
-    char* currentLine = malloc(1 * sizeof(char));
+    char *currentLine = malloc(1 * sizeof(char));
     int sizeCL = 0;
     int lineNum = -1;
     int writtenDistances = 0;
-    while ((currentChar = fgetc(file)) != EOF)
-    {
-        currentLine = realloc(currentLine,(++sizeCL) * sizeof(char));
+    while ((currentChar = fgetc(file)) != EOF) {
+        currentLine = realloc(currentLine, (++sizeCL) * sizeof(char));
         if (currentChar == '\n') {
             if (lineNum == -1) {
-                char** strPtr = malloc(1* sizeof(char));
-                distanceTable->n = countWords(currentLine,sizeCL);
-                strToStrPtr(distanceTable->cities,currentLine,sizeCL);
+                char **strPtr = malloc(1 * sizeof(char));
+                distanceTable->n = countWords(currentLine, sizeCL);
+                strToStrPtr(distanceTable->cities, currentLine, sizeCL);
                 free(strPtr);
             } else {
                 int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
@@ -91,9 +94,9 @@ DistanceTable* parseData(FILE *file, DistanceTable* distanceTable) {
             lineNum++;
             sizeCL = 1;
         }
-        currentLine[sizeCL-1] = (char) currentChar;
+        currentLine[sizeCL - 1] = (char) currentChar;
     }
-    if (writtenDistances != distanceTable->n*distanceTable->n) {
+    if (writtenDistances != distanceTable->n * distanceTable->n) {
         int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
         if (size != distanceTable->n) {
             printf("Table not correctly formatted!\n");
@@ -103,10 +106,11 @@ DistanceTable* parseData(FILE *file, DistanceTable* distanceTable) {
     return NULL;
 }
 
-FILE* loadFilePrompt() {
+FILE *loadFilePrompt(char *mode) {
     int fileNameSize = 20;
     printf("Type your file name [limited to %d character]:\n", fileNameSize);
     char fileName[fileNameSize];
+    printf("Filename:");
     scanf("%20s", fileName);
     while (getchar() != '\n');
 
@@ -117,10 +121,11 @@ FILE* loadFilePrompt() {
     for (int i = 3; i < 24; i++)
         temp[i] = fileName[i - 3];
 
-    return getFile(temp);
+    return getFile(temp, mode);
 }
 
-void loadDataTxT(DistanceTable* distanceTable, char* fileName) {
+//TODO remove
+void loadDataTxT(DistanceTable *distanceTable, char *fileName) {
     FILE *fptr;
 
     //FIXME remove when finishing the project
@@ -130,7 +135,7 @@ void loadDataTxT(DistanceTable* distanceTable, char* fileName) {
     for (int i = 3; i < 24; i++)
         temp[i] = fileName[i - 3];
 
-    fptr = getFile(temp);
+    fptr = getFile(temp, "r+");
 
     if (fptr == NULL) {
         printf("Error!\nFile could not be found, is protected or read-only!\n");
@@ -141,45 +146,68 @@ void loadDataTxT(DistanceTable* distanceTable, char* fileName) {
     printf("%d Cities loaded!\n", distanceTable->n);
 }
 
-void readFile(DistanceTable* distanceTable) {
-    FILE *fptr;
+void readFile(DistanceTable *distanceTable) {
+    FILE *fptr = NULL;
 
-    fptr = loadFilePrompt();
+    fptr = loadFilePrompt("r+");
 
     if (fptr == NULL) {
         printf("Error!\nFile could not be found, is protected or read-only!\n");
         return;
     }
-    DistanceTable *table = NULL;
     int cityLimit = 50;
-    table->distance = malloc(cityLimit*cityLimit*sizeof(Distance));
-    table->cities = malloc(cityLimit*sizeof(char*));
-    for(int i = 0;i < cityLimit;i++) table->cities[i] = malloc(40* sizeof(char*));
-    table->n = 0;
-    distanceTable = table;
+    distanceTable->distance = malloc(cityLimit * cityLimit * sizeof(Distance));
+    distanceTable->cities = malloc(cityLimit * sizeof(char *));
+    for (int i = 0; i < cityLimit; i++) distanceTable->cities[i] = malloc(40 * sizeof(char *));
+    distanceTable->n = 0;
     parseData(fptr, distanceTable);
     fclose(fptr);
-    printf("Data fully loaded!\n");
+    printf("Data successfully loaded!\n");
 }
 
-void saveTable() {
-    FILE *fptr;
-
-    fptr = loadFilePrompt();
-
-
-}
-
-Distance* findDistance(DistanceTable* table, int from, int to) {
+Distance *findDistance(DistanceTable *table, int from, int to) {
     for (int i = 0; i < table->n * table->n; ++i) {
         if (table->distance[i].from == from && table->distance[i].to == to) return &table->distance[i];
     }
     return NULL;
 }
 
-void printTable(DistanceTable* table) {
+void saveTable(DistanceTable *table) {
+    FILE *fptr;
 
-    Distance* distance = NULL;
+    fptr = loadFilePrompt("w+");
+
+    if (fptr == NULL) {
+        printf("Failed to open requested file.\n");
+        return;
+    }
+
+    Distance *distance = NULL;
+
+    for (int i = 0; i <= table->n; ++i) {
+        for (int j = 0; j < table->n; ++j) {
+            if (i == 0) {
+                fprintf(fptr, j == 0 ? "%s" : " %s", table->cities[j]);
+            } else {
+
+                distance = findDistance(table, i - 1, j);
+                if (distance != NULL) {
+                    fprintf(fptr, j == 0 ? "%d" : " %d", distance->dist);
+                    distance = NULL;
+                } else {
+                    fprintf(fptr, "err");
+                }
+            }
+        }
+        fprintf(fptr, "\n");
+    }
+
+    fclose(fptr);
+}
+
+void printTable(DistanceTable *table) {
+
+    Distance *distance = NULL;
 
     for (int i = 0; i <= table->n; ++i) {
         for (int j = 0; j <= table->n; ++j) {
@@ -190,19 +218,19 @@ void printTable(DistanceTable* table) {
                 }
                 printf("%-15s", table->cities[j - 1]);
             } else {
-               if (j == 0) {
+                if (j == 0) {
                     printf("%-15s ", table->cities[i - 1]);
                     continue;
-               }
+                }
 
 
-               distance = findDistance(table, i - 1, j - 1);
-               if (distance != NULL) {
-                   printf("%-15d", distance->dist);
-                   distance = NULL;
-               } else {
-                   printf("%-15s", "err");
-               }
+                distance = findDistance(table, i - 1, j - 1);
+                if (distance != NULL) {
+                    printf("%-15d", distance->dist);
+                    distance = NULL;
+                } else {
+                    printf("%-15s", "err");
+                }
             }
         }
         printf("\n");
@@ -210,14 +238,14 @@ void printTable(DistanceTable* table) {
     }
 }
 
-int cityNameIndex(DistanceTable* table, char* name) {
+int cityNameIndex(DistanceTable *table, char *name) {
     for (int i = 0; i < table->n; ++i) {
         if (strcmp(table->cities[i], name) == 0) return i;
     }
     return -1;
 }
 
-void modifyDistance(DistanceTable* table) {
+void modifyTable(DistanceTable *table) {
 
     char from[40];
     int fromIndex = -1;
@@ -232,7 +260,7 @@ void modifyDistance(DistanceTable* table) {
     }
     printf("\n\n");
 
-    while(fromIndex == -1) {
+    while (fromIndex == -1) {
         printf("First City: ");
         scanf("%40s", from);
 
@@ -244,7 +272,7 @@ void modifyDistance(DistanceTable* table) {
         }
     }
 
-    while(toIndex == -1) {
+    while (toIndex == -1) {
         printf("Second City: ");
         scanf("%40s", to);
 
@@ -256,8 +284,8 @@ void modifyDistance(DistanceTable* table) {
         }
     }
 
-    Distance* atob = findDistance(table, fromIndex, toIndex);
-    Distance* btoa = findDistance(table, toIndex, fromIndex);
+    Distance *atob = findDistance(table, fromIndex, toIndex);
+    Distance *btoa = findDistance(table, toIndex, fromIndex);
 
     int newAtoB = -1, newBtoA = -1;
 
@@ -293,58 +321,40 @@ int main() {
     //DistanceTable Init
     DistanceTable table;
     int cityLimit = 50;
-    table.distance = malloc(cityLimit*cityLimit*sizeof(Distance));
-    table.cities = malloc(cityLimit*sizeof(char*));
-    for(int i = 0;i < cityLimit;i++) table.cities[i] = malloc(40* sizeof(char*));
+    table.distance = malloc(cityLimit * cityLimit * sizeof(Distance));
+    table.cities = malloc(cityLimit * sizeof(char *));
+    for (int i = 0; i < cityLimit; i++) table.cities[i] = malloc(40 * sizeof(char *));
     table.n = 0;
 
     int end = 0;
 
-    DistanceTable testTable;
-    testTable.n = 3;
-    char* names[3];
-    names[0] = "Moin";
-    names[1] = "Mei";
-    names[2] = "Ster";
-    testTable.cities = names;
-    //testTable.distance = NULL;
-
-    Distance d0_0 = {from: 0, to: 0, dist: 0};
-    Distance d0_1 = {from: 0, to: 1, dist: 13};
-    Distance d0_2 = {from: 0, to: 2, dist: 44};
-
-    Distance d1_0 = {from: 1, to: 0, dist: 47};
-    Distance d1_1 = {from: 1, to: 1, dist: 0};
-    Distance d1_2 = {from: 1, to: 2, dist: 44};
-
-    Distance d2_0 = {from: 2, to: 0, dist: 87};
-    Distance d2_1 = {from: 2, to: 1, dist: 11};
-    Distance d2_2 = {from: 2, to: 2, dist: 0};
-
-    Distance distance[9];
-    distance[0] = d0_0;
-    distance[1] = d0_1;
-    distance[2] = d0_2;
-    distance[3] = d1_0;
-    distance[4] = d1_1;
-    distance[5] = d1_2;
-    distance[6] = d2_0;
-    distance[7] = d2_1;
-    distance[8] = d2_2;
-
-    testTable.distance = distance;
-
-    printTable(&testTable);
-    loadDataTxT(&table,"data.txt");
-    printTable(&table);
-    //modifyDistance(&testTable);
+    //TODO REMOVE
+    //loadDataTxT(&table, "data.txt");
+    //printTable(&table);
+    //readFile(&table);
+    //modifyTable(&testTable);
+    //TODO END
 
     while (end == 0) {
         int switchNum = -1;
-        printf("-------------\nOperations:\n1. End Program\n2. Read File\n3. Display Table\n\nType the number of your operation:");
+        printf("-------------\nOperations:\n1. End Program\n2. Read File\n3. Display Table\n4. Modify Table\n5. Save Table\n\nType the number of your operation:");
         scanf("%d", &switchNum);
         while (getchar() != '\n');
         switch (switchNum) {
+            case 5:
+                if (table.n == 0) {
+                    printf("Table not loaded.\n");
+                    break;
+                }
+                saveTable(&table);
+                break;
+            case 4:
+                if (table.n == 0) {
+                    printf("Table not loaded.\n");
+                    break;
+                }
+                modifyTable(&table);
+                break;
             case 3:
                 if (table.n == 0) {
                     printf("Table not loaded.\n");
