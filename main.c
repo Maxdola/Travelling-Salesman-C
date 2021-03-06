@@ -70,10 +70,11 @@ DistanceTable* parseData(FILE *file, DistanceTable* distanceTable) {
     char* currentLine = malloc(1 * sizeof(char));
     int sizeCL = 0;
     int lineNum = -1;
+    int writtenDistances = 0;
     while ((currentChar = fgetc(file)) != EOF)
     {
         currentLine = realloc(currentLine,(++sizeCL) * sizeof(char));
-        if (currentChar == 10) {
+        if (currentChar == '\n') {
             if (lineNum == -1) {
                 char** strPtr = malloc(1* sizeof(char));
                 distanceTable->n = countWords(currentLine,sizeCL);
@@ -85,11 +86,19 @@ DistanceTable* parseData(FILE *file, DistanceTable* distanceTable) {
                     printf("Table not correctly formatted!\n");
                     exit(0);
                 }
+                writtenDistances += size;
             }
             lineNum++;
             sizeCL = 1;
         }
         currentLine[sizeCL-1] = (char) currentChar;
+    }
+    if (writtenDistances != distanceTable->n*distanceTable->n) {
+        int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
+        if (size != distanceTable->n) {
+            printf("Table not correctly formatted!\n");
+            exit(0);
+        }
     }
     return NULL;
 }
@@ -111,10 +120,8 @@ FILE* loadFilePrompt() {
     return getFile(temp);
 }
 
-void loadDataTxT(DistanceTable* distanceTable) {
+void loadDataTxT(DistanceTable* distanceTable, char* fileName) {
     FILE *fptr;
-
-    char fileName[] = "data.txt";
 
     //FIXME remove when finishing the project
     char temp[24];
@@ -131,7 +138,7 @@ void loadDataTxT(DistanceTable* distanceTable) {
     }
     parseData(fptr, distanceTable);
     fclose(fptr);
-    printf("Data fully loaded!\n");
+    printf("%d Cities loaded!\n", distanceTable->n);
 }
 
 void readFile(DistanceTable* distanceTable) {
@@ -143,6 +150,13 @@ void readFile(DistanceTable* distanceTable) {
         printf("Error!\nFile could not be found, is protected or read-only!\n");
         return;
     }
+    DistanceTable *table = NULL;
+    int cityLimit = 50;
+    table->distance = malloc(cityLimit*cityLimit*sizeof(Distance));
+    table->cities = malloc(cityLimit*sizeof(char*));
+    for(int i = 0;i < cityLimit;i++) table->cities[i] = malloc(40* sizeof(char*));
+    table->n = 0;
+    distanceTable = table;
     parseData(fptr, distanceTable);
     fclose(fptr);
     printf("Data fully loaded!\n");
@@ -211,7 +225,7 @@ void modifyDistance(DistanceTable* table) {
     char to[40];
     int toIndex = -1;
 
-    printf("Please now enter the City names you want to modify:\n[maximal lenght is 40 characters]\n\n");
+    printf("Please now enter the City names you want to modify:\n[maximal length is 40 characters]\n\n");
     printf("Cities:");
     for (int i = 0; i < table->n; ++i) {
         printf(" %s", table->cities[i]);
@@ -275,27 +289,6 @@ void modifyDistance(DistanceTable* table) {
     //printTable(table);
 }
 
-int testing(int* values, const char* string, int overwrite) {
-    int size = (sizeof(&values) / sizeof(int));
-    int i = 0;
-    while(string[i] != 0) {
-        if (string[i] < 58 && string[i] > 47) {
-            int value = 0;
-            while (string[i] < 58 && string[i] > 47) {
-                value = (value * 10) /*Pushes to the left to make room for the new number*/ +
-                        (string[i++] - 48); //Places the new number to its position
-            }
-            if (overwrite == 0) values = realloc(values, (++size) * sizeof(int));
-            else overwrite = 0;
-            values[size-1] = value;
-            //printf("%d\n", value);
-        } else {
-            i++;
-        }
-    }
-    return size;
-}
-
 int main() {
     //DistanceTable Init
     DistanceTable table;
@@ -342,7 +335,7 @@ int main() {
     testTable.distance = distance;
 
     printTable(&testTable);
-    loadDataTxT(&table);
+    loadDataTxT(&table,"data.txt");
     printTable(&table);
     //modifyDistance(&testTable);
 
