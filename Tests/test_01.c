@@ -2,23 +2,22 @@
 #include <stdlib.h>
 
 int maini() {
-    int num;
-    FILE *fptr;
+    const int bufSize = 32;
+    char **splitStrings;
 
-    // use appropriate location if you are using MacOS or Linux
-    fptr = fopen("program.txt","w");
+    splitStrings = malloc(bufSize*sizeof(char*));
 
-    if(fptr == NULL)
-    {
-        printf("Error!");
-        exit(1);
+    for (int i=0;i<bufSize;i++){
+        splitStrings[i]=malloc(bufSize*sizeof(char*));
     }
 
-    printf("Enter num: ");
-    scanf("%d",&num);
+    splitStrings[0][0] = 'a';
+    splitStrings[0][1] = '\0';
 
-    fprintf(fptr,"%d",num);
-    fclose(fptr);
+    printf("testchar: %c\n", splitStrings[0][0]);
+    printf("teststr: %s\n", splitStrings[0]);
+
+    free(splitStrings);
 
     return 0;
 }

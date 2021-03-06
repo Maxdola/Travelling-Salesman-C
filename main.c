@@ -13,15 +13,87 @@ typedef struct {
     Distance *distance;
 } DistanceTable;
 
+int countWords(const char* string, int stringLength) {
+    int a = 0;
+    for (int i = 0; i < stringLength-1; i++) {
+        if ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+            while ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+                i++;
+            }
+            a++;
+        }
+    }
+    return a;
+}
+
+void strToStrPtr(char** strPtr, const char* string, int stringLength) {
+    int counter = 0;
+    for (int i = 0; i < stringLength-1; i++) {
+        if ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+            int j = 0;
+            while ((string[i] < 91 && string[i] > 64)||(string[i] < 123 && string[i] > 96) || string[i] == 45 || string[i] == 95) {
+                strPtr[counter][j++] = string[i++];
+            }
+            strPtr[counter][j] = '\0';
+            counter++;
+        }
+    }
+}
+
+int strToIntPtr(Distance* distances, const char* string, int city, int n) {
+    int size = 1;
+    int i = 0;
+    while(string[i] != 0) {
+        if (string[i] < 58 && string[i] > 47) {
+            int value = 0;
+            while (string[i] < 58 && string[i] > 47) {
+                value = (value * 10) /*Pushes to the left to make room for the new number*/ +
+                        (string[i++] - 48); //Places the new number to its position
+            }
+            Distance dist = {city,size-1,value};
+            distances[(city*n)+(size)-1] = dist;
+            size++;
+        } else {
+            i++;
+        }
+    }
+    return size-1;
+}
+
 FILE *getFile(char *path) {
     return fopen(path, "r+");
 }
 
-DistanceTable* parseData(FILE *file) {
+DistanceTable* parseData(FILE *file, DistanceTable* distanceTable) {
+    int currentChar;
+    char* currentLine = malloc(1 * sizeof(char));
+    int sizeCL = 0;
+    int lineNum = -1;
+    while ((currentChar = fgetc(file)) != EOF)
+    {
+        currentLine = realloc(currentLine,(++sizeCL) * sizeof(char));
+        if (currentChar == 10) {
+            if (lineNum == -1) {
+                char** strPtr = malloc(1* sizeof(char));
+                distanceTable->n = countWords(currentLine,sizeCL);
+                strToStrPtr(distanceTable->cities,currentLine,sizeCL);
+                free(strPtr);
+            } else {
+                int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
+                if (size != distanceTable->n) {
+                    printf("Table not correctly formatted!\n");
+                    exit(0);
+                }
+            }
+            lineNum++;
+            sizeCL = 1;
+        }
+        currentLine[sizeCL-1] = (char) currentChar;
+    }
     return NULL;
 }
 
-DistanceTable *readFile() {
+void readFile(DistanceTable* distanceTable) {
     FILE *fptr;
 
     int fileNameSize = 20;
@@ -42,47 +114,25 @@ DistanceTable *readFile() {
 
     if (fptr == NULL) {
         printf("Error!\nFile could not be found, is protected or read-only!\n");
-        return NULL;
     }
-    DistanceTable* table = parseData(fptr);
-    if (table == NULL) {
-        printf("Error!\nFile not correctly formatted!\n");
-    }
+    parseData(fptr, distanceTable);
     fclose(fptr);
-    return table;
+    printf("Data fully loaded!\n");
 }
 
 void printTable(DistanceTable* table) {
 
 }
 
-int testing(int* values, const char* string, int overwrite) {
-    int size = (sizeof(&values) / sizeof(int));
-    int i = 0;
-    while(string[i] != 0) {
-        if (string[i] < 58 && string[i] > 47) {
-            int value = 0;
-            while (string[i] < 58 && string[i] > 47) {
-                value = (value * 10) /*Pushes to the left to make room for the new number*/ +
-                        (string[i++] - 48); //Places the new number to its position
-            }
-            if (overwrite == 0) values = realloc(values, (++size) * sizeof(int));
-            else overwrite = 0;
-            values[size-1] = value;
-            //printf("%d\n", value);
-        } else {
-            i++;
-        }
-    }
-    return size;
-}
-
 int main() {
-    int* ptr = malloc(1 * sizeof(int));
-    int size = testing(ptr,"11053 25490  23 1224 5 12", 1);
-    for(int i = 0; i < size; i++) printf("%d\n",ptr[i]);
-    free(ptr);
-    DistanceTable* table = NULL;
+    //DistanceTable Init
+    DistanceTable table;
+    int cityLimit = 50;
+    table.distance = malloc(cityLimit*cityLimit*sizeof(Distance));
+    table.cities = malloc(cityLimit*sizeof(char*));
+    for(int i = 0;i < cityLimit;i++) table.cities[i] = malloc(40* sizeof(char*));
+    table.n = 0;
+
     int end = 0;
     while (end == 0) {
         int switchNum = -1;
@@ -91,14 +141,14 @@ int main() {
         while (getchar() != '\n');
         switch (switchNum) {
             case 3:
-                if (table == NULL) {
+                if (table.n == 0) {
                     printf("Table not loaded.\n");
                     break;
                 }
-                printTable(table);
+                printTable(&table);
                 break;
             case 2:
-                table = readFile();
+                readFile(&table);
                 break;
             case 1:
                 printf("Ending Program...\n");
