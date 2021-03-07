@@ -169,7 +169,7 @@ void readFile(DistanceTable *distanceTable, int cityLimit) {
 }
 
 Distance *findDistance(DistanceTable *table, int from, int to) {
-    int a = from*table->n+to;
+    int a = from * table->n + to;
     if (table->distance[a].from == from && table->distance[a].to == to) return &table->distance[a];
     for (int i = 0; i < table->n * table->n; ++i) {
         if (table->distance[i].from == from && table->distance[i].to == to) return &table->distance[i];
@@ -322,6 +322,44 @@ void modifyTable(DistanceTable *table) {
     //printTable(table);
 }
 
+int recursiveHeuristicCalculation(DistanceTable *distanceTable, int *field, int *way, int size, int pos, int oldDistance) {
+    if (size == pos) {
+        way[pos] = way[0];
+        return oldDistance + findDistance(distanceTable, way[pos - 1], way[pos])->dist;
+    }
+    int distance = -1;
+    int newCity;
+    for (int i = 0; i < size; i++) {
+        if (field[i] != -1) {
+            if (distance != -1) {
+                int newDist = findDistance(distanceTable, way[pos - 1], field[i])->dist;
+                if (newDist < distance) {
+                    distance = newDist;
+                    newCity = field[i];
+                }
+            } else {
+                distance = findDistance(distanceTable, way[pos - 1], field[i])->dist;
+                newCity = field[i];
+            }
+        }
+    }
+    field[newCity] = -1;
+    way[pos] = newCity;
+    return recursiveHeuristicCalculation(distanceTable, field, way, size, pos+1, distance+oldDistance);
+}
+
+void heuristicCalc(DistanceTable *distanceTable, int startCity) {
+    int way[distanceTable->n + 1];
+    int field[distanceTable->n];
+    for (int i = 0; i < distanceTable->n; i++) field[i] = i;
+    field[startCity] = -1;
+    way[0] = startCity;
+    int distance = recursiveHeuristicCalculation(distanceTable, field, way, distanceTable->n, 1, 0);
+    printf("Route: %s", distanceTable->cities[startCity]);
+    for (int i = 1; i < distanceTable->n + 1; i++) printf(" -%d> %s",findDistance(distanceTable, way[i - 1], way[i])->dist,distanceTable->cities[way[i]]);
+    printf("\nDistance: %d\n", distance);
+}
+
 int main() {
     //DistanceTable Init
     DistanceTable table;
@@ -334,10 +372,23 @@ int main() {
     int end = 0;
     while (end == 0) {
         int switchNum = -1;
-        printf("-------------\nOperations:\n1. End Program\n2. Read File\n3. Display Table\n4. Modify Table\n5. Save Table\n\nType the number of your operation:");
+        printf("-------------\nOperations:\n1. End Program\n2. Read File\n3. Display Table\n4. Modify Table\n5. Save Table\n6. Heuristic Calculation for the shortest Route\n\nType the number of your operation:");
         scanf("%d", &switchNum);
         while (getchar() != '\n');
         switch (switchNum) {
+            case 6:
+                if (table.n == 0) {
+                    printf("Table not loaded!\n");
+                    break;
+                }
+                for (int i = 0; i < table.n; i++) printf("%d. %s\n",i+1,table.cities[i]);
+                printf("Enter the number of the City:");
+                int cityNum = 0;
+                scanf("%d", &cityNum);
+                while (getchar() != '\n');
+                if (cityNum < 1 || cityNum > table.n) break;
+                heuristicCalc(&table,cityNum-1);
+                break;
             case 5:
                 if (table.n == 0) {
                     printf("Table not loaded.\n");
