@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Defining the provided Structures
 typedef struct {
     int from;
     int to;
@@ -14,6 +15,12 @@ typedef struct {
     Distance *distance;
 } DistanceTable;
 
+/**
+ * This function counts the words in a String split at every non letter besides (_-)
+ * @param string The String, which should be scanned
+ * @param stringLength the length of the provided String
+ * @return the amount of words in {@param string}
+ */
 int countWords(const char *string, int stringLength) {
     int a = 0;
     for (int i = 0; i < stringLength - 1; i++) {
@@ -29,6 +36,12 @@ int countWords(const char *string, int stringLength) {
     return a;
 }
 
+/**
+ * Splits {@param string} into a string array (char**)
+ * @param strPtr the array the string is saved to
+ * @param string the string which should be split
+ * @param stringLength the length of {@param string}
+ */
 void strToStrPtr(char **strPtr, const char *string, int stringLength) {
     int counter = 0;
     for (int i = 0; i < stringLength - 1; i++) {
@@ -45,6 +58,14 @@ void strToStrPtr(char **strPtr, const char *string, int stringLength) {
     }
 }
 
+/**
+ * Converts a line of numbers as String to Distance structs
+ * @param distances the array of Distances the new Distances are saved to
+ * @param string the line containing the String numbers
+ * @param city the city the distances are from
+ * @param n the total amount of cities
+ * @return the amount of new Distances added to {@param distances}
+ */
 int strToIntPtr(Distance *distances, const char *string, int city, int n) {
     int size = 1;
     int i = 0;
@@ -64,11 +85,12 @@ int strToIntPtr(Distance *distances, const char *string, int city, int n) {
     return size - 1;
 }
 
-FILE *getFile(char *path, char *mode) {
-    return fopen(path, mode);
-}
-
-DistanceTable *parseData(FILE *file, DistanceTable *distanceTable) {
+/**
+ * Parsed the contents of {@param file} to {@param distanceTable}
+ * @param file the sourceFile containing the serialized distanceTable
+ * @param distanceTable the pointer the parsed data is written to
+ */
+void parseData(FILE *file, DistanceTable *distanceTable) {
     int currentChar;
     char *currentLine = malloc(1 * sizeof(char));
     int sizeCL = 0;
@@ -102,9 +124,13 @@ DistanceTable *parseData(FILE *file, DistanceTable *distanceTable) {
             exit(0);
         }
     }
-    return NULL;
 }
 
+/**
+ * Asks the user for a file name, opens it and returns a pointer to the file.
+ * @param mode the way a file should be opened (ex. with/without write permissions)
+ * @return a pointer the file the user enters
+ */
 FILE *loadFilePrompt(char *mode) {
     int fileNameSize = 20;
     printf("Type your file name [limited to %d character]:\n", fileNameSize);
@@ -113,9 +139,14 @@ FILE *loadFilePrompt(char *mode) {
     scanf("%20s", fileName);
     while (getchar() != '\n');
 
-    return getFile(fileName, mode);
+    return fopen(fileName, mode);
 }
 
+/**
+ * Handles the process of selecting a file (by the user) and parsing it.
+ * @param distanceTable the DistanceTable the data from the file is written to
+ * @param cityLimit the maximum of cities which can be parsed
+ */
 void readFile(DistanceTable *distanceTable, int cityLimit) {
     FILE *fptr = NULL;
     fptr = loadFilePrompt("r+");
@@ -137,6 +168,13 @@ void readFile(DistanceTable *distanceTable, int cityLimit) {
     printf("%d Cities successfully loaded!\n", distanceTable->n);
 }
 
+/**
+ * Finds a Distance struct based on {@param from} and {@param to}
+ * @param table the DistanceTable containing the loaded data
+ * @param from the From City Index
+ * @param to the To City Index
+ * @return a Pointer to the Distance pointer which matches the {@param from} and {@param to}
+ */
 Distance *findDistance(DistanceTable *table, int from, int to) {
     int a = from * table->n + to;
     if (table->distance[a].from == from && table->distance[a].to == to) return &table->distance[a];
@@ -146,6 +184,10 @@ Distance *findDistance(DistanceTable *table, int from, int to) {
     return NULL;
 }
 
+/**
+ * Handles the process of asking the user for a file and saving the DistanceTable
+ * @param table the DistanceTable to be saved
+ */
 void saveTable(DistanceTable *table) {
     FILE *fptr;
     fptr = loadFilePrompt("w+");
@@ -177,6 +219,10 @@ void saveTable(DistanceTable *table) {
     fclose(fptr);
 }
 
+/**
+ * Prints {@param table} to the console
+ * @param table the DistanceTable to be printed
+ */
 void printTable(DistanceTable *table) {
     Distance *distance = NULL;
 
@@ -206,6 +252,12 @@ void printTable(DistanceTable *table) {
     }
 }
 
+/**
+ * Finds the index of {@param name} within DistanceTable#cities
+ * @param table the DistanceTable which is used
+ * @param name the name of the city
+ * @return index of {@param name} within DistanceTable#cities
+ */
 int cityNameIndex(DistanceTable *table, char *name) {
     for (int i = 0; i < table->n; ++i) {
         if (strcmp(table->cities[i], name) == 0) return i;
@@ -213,6 +265,13 @@ int cityNameIndex(DistanceTable *table, char *name) {
     return -1;
 }
 
+/**
+ * Handles the process of modifing the Distances within DistanceTable#distance
+ * including asking the user which cities should be modified
+ * @param table the DistanceTable where the cities will be modified
+ * @return 0: the new distances are identical to the initial data
+ * @return 1: the new distances differ from the original data
+ */
 int modifyTable(DistanceTable *table) {
 
     char from[40];
@@ -291,14 +350,24 @@ int modifyTable(DistanceTable *table) {
     return 1;
 }
 
-int recursiveHeuristicCalculation(DistanceTable *distanceTable, int *field, int *way, int size, int pos, int oldDistance) {
-    if (size == pos) {
+/**
+ * Finds the closest city to the last city within the last element of {@param way}
+ * and adds the distance to {@param oldDistance}
+ * @param distanceTable the DistanceTable the distances are calculated from
+ * @param field remaining cities
+ * @param way the calculated path
+ * @param pos the position of the next city within {@param way}
+ * @param oldDistance the summed up distance of {@param way}
+ * @return the total distance between all cities within {@param way} including returning to the starting city
+ */
+int heuristicCalculation(DistanceTable *distanceTable, int *field, int *way, int pos, int oldDistance) {
+    if (distanceTable->n == pos) {
         way[pos] = way[0];
         return oldDistance + findDistance(distanceTable, way[pos - 1], way[pos])->dist;
     }
     int distance = -1;
     int newCity;
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < distanceTable->n; i++) {
         if (field[i] != -1) {
             if (distance != -1) {
                 int newDist = findDistance(distanceTable, way[pos - 1], field[i])->dist;
@@ -314,14 +383,25 @@ int recursiveHeuristicCalculation(DistanceTable *distanceTable, int *field, int 
     }
     field[newCity] = -1;
     way[pos] = newCity;
-    return recursiveHeuristicCalculation(distanceTable, field, way, size, pos + 1, distance + oldDistance);
+    return heuristicCalculation(distanceTable, field, way, pos + 1, distance + oldDistance);
 }
 
+/**
+ * Prints the Route nicely formatted to the console
+ * @param distanceTable the DistanceTable the data is from
+ * @param startCity the city the route starts at
+ * @param cities the complete route
+ */
 void printRoute(DistanceTable *distanceTable, int startCity, int *cities) {
     printf("Route: %s", distanceTable->cities[startCity]);
     for (int i = 1; i <= distanceTable->n; i++) printf(" -%d> %s", findDistance(distanceTable, cities[i - 1], cities[i])->dist, distanceTable->cities[cities[i]]);
 }
 
+/**
+ * Promts the user to select a city from {@param table}#cities
+ * @param table the DistanceTable#citys the user should select from
+ * @return the index of the selected city
+ */
 int selectCity(DistanceTable *table) {
     for (int i = 0; i < table->n; i++) printf("%d. %s\n", i + 1, table->cities[i]);
     printf("Enter the number of the City:\n");
@@ -335,6 +415,11 @@ int selectCity(DistanceTable *table) {
     return cityNum - 1;
 }
 
+/**
+ * Prompts the user to select a city and then calculates the shortest route
+ * with the heuristic approach
+ * @param distanceTable the DistanceTable the data is from
+ */
 void heuristicCalc(DistanceTable *distanceTable) {
     int startCity = selectCity(distanceTable);
     int cities[distanceTable->n + 1];
@@ -344,11 +429,17 @@ void heuristicCalc(DistanceTable *distanceTable) {
     field[startCity] = -1;
     cities[0] = startCity;
 
-    int distance = recursiveHeuristicCalculation(distanceTable, field, cities, distanceTable->n, 1, 0);
+    int distance = heuristicCalculation(distanceTable, field, cities, 1, 0);
     printRoute(distanceTable, startCity, cities);
     printf("\nDistance: %d\n", distance);
 }
 
+/**
+ * Calculates the Distance of a the route {@param cities} including returning to the start city
+ * @param table the DistanceTable the data is from
+ * @param cities the route
+ * @return the total distance including returning to the start city
+ */
 int calculateDistance(DistanceTable *table, int *cities) {
     int dist = 0;
     for (int i = 1; i < table->n; ++i) {
@@ -358,31 +449,48 @@ int calculateDistance(DistanceTable *table, int *cities) {
     return dist;
 }
 
+/**
+ * Swaps Element {@param i} with {@param j} within {@param arr}
+ */
 void swap(int *arr, int i, int j) {
     int temp = arr[i];
     arr[i] = arr[j];
     arr[j] = temp;
 }
 
-void permute(DistanceTable *table, int *cities, int i, int length, int *shortest, int *dist) {
-    if (length == i) {
+/**
+ * Generated all possible permutations of the route ({@param cities})
+ * and saved the shortest route within {@param shortest}
+ * @param table the DistanceTable the data is from
+ * @param cities current route to be permuated or measured
+ * @param i the length of {@param cities}
+ * @param shortest the shortest route
+ * @param dist the distance of the shortest route
+ */
+void permute(DistanceTable *table, int *cities, int i, int *shortest, int *dist) {
+    if (table->n == i) {
         int currentDist = calculateDistance(table, cities);
         if (*dist > currentDist) {
             *dist = currentDist;
-            for (int j = 0; j < length; ++j) {
+            for (int j = 0; j < table->n; ++j) {
                 shortest[j] = cities[j];
             }
         }
         return;
     }
 
-    for (int j = i; j < length; j++) {
+    for (int j = i; j < table->n; j++) {
         swap(cities, i, j);
-        permute(table, cities, i + 1, length, shortest, dist);
+        permute(table, cities, i + 1, shortest, dist);
         swap(cities, i, j);
     }
 }
 
+/**
+ * Prompts the user to select a city and then calculates the shortest route
+ * with the exact approach (bruteforce)
+ * @param table the DistanceTable the data is from
+ */
 void calculateBestRoute(DistanceTable *table) {
 
     int startCity = selectCity(table);
@@ -395,7 +503,7 @@ void calculateBestRoute(DistanceTable *table) {
     }
 
     int bestDist = calculateDistance(table, shortest);
-    permute(table, cities, 0, table->n, shortest, &bestDist);
+    permute(table, cities, 0, shortest, &bestDist);
 
     int startCityIndex = -1;
     for (int i = 0; i < table->n; ++i) if (shortest[i] == startCity) {
@@ -412,6 +520,13 @@ void calculateBestRoute(DistanceTable *table) {
     printf("\nDistanz: %d\n", bestDist);
 }
 
+/**
+ * Checks if the DistanceTable has been loaded
+ * and prints a error message if not loaded
+ * @param table the DistanceTable to be checked
+ * @return 0: Tabled has not been loaded
+ * @return 0: Tabled has been loaded
+ */
 int isTableLoaded(DistanceTable *table) {
     if (table->n == 0) {
         printf("Table not loaded!\n");
@@ -420,6 +535,12 @@ int isTableLoaded(DistanceTable *table) {
     return 1;
 }
 
+/**
+ * Staring point of the Program, created the needed Elements
+ * and handles the user Menuselection
+ * and starts the selected functions
+ * @return 0 when the program has ended successfully.
+ */
 int main() {
     //DistanceTable Init
     DistanceTable table;
