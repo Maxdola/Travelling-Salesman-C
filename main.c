@@ -52,8 +52,7 @@ int strToIntPtr(Distance *distances, const char *string, int city, int n) {
         if (string[i] < 58 && string[i] > 47) {
             int value = 0;
             while (string[i] < 58 && string[i] > 47) {
-                value = (value * 10) /*Pushes to the left to make room for the new number*/ +
-                        (string[i++] - 48); //Places the new number to its position
+                value = (value * 10) + (string[i++] - 48);
             }
             Distance dist = {city, size - 1, value};
             distances[(city * n) + (size) - 1] = dist;
@@ -114,42 +113,11 @@ FILE *loadFilePrompt(char *mode) {
     scanf("%20s", fileName);
     while (getchar() != '\n');
 
-    //FIXME remove when finishing the project
-    char temp[24];
-    temp[0] = temp[1] = '.';
-    temp[2] = '/';
-    for (int i = 3; i < 24; i++)
-        temp[i] = fileName[i - 3];
-
     return getFile(fileName, mode);
-}
-
-//TODO remove
-void loadDataTxT(DistanceTable *distanceTable, char *fileName) {
-    FILE *fptr;
-
-    //FIXME remove when finishing the project
-    char temp[24];
-    temp[0] = temp[1] = '.';
-    temp[2] = '/';
-    for (int i = 3; i < 24; i++)
-        temp[i] = fileName[i - 3];
-
-    fptr = getFile(temp, "r+");
-    //fptr = getFile(fileName, "r+");
-
-    if (fptr == NULL) {
-        printf("Error!\nFile could not be found, is protected or read-only!\n");
-        return;
-    }
-    parseData(fptr, distanceTable);
-    fclose(fptr);
-    printf("%d Cities loaded!\n", distanceTable->n);
 }
 
 void readFile(DistanceTable *distanceTable, int cityLimit) {
     FILE *fptr = NULL;
-
     fptr = loadFilePrompt("r+");
 
     if (fptr == NULL) {
@@ -180,7 +148,6 @@ Distance *findDistance(DistanceTable *table, int from, int to) {
 
 void saveTable(DistanceTable *table) {
     FILE *fptr;
-
     fptr = loadFilePrompt("w+");
 
     if (fptr == NULL) {
@@ -189,7 +156,6 @@ void saveTable(DistanceTable *table) {
     }
 
     Distance *distance = NULL;
-
     for (int i = 0; i <= table->n; ++i) {
         for (int j = 0; j < table->n; ++j) {
             if (i == 0) {
@@ -212,7 +178,6 @@ void saveTable(DistanceTable *table) {
 }
 
 void printTable(DistanceTable *table) {
-
     Distance *distance = NULL;
 
     for (int i = 0; i <= table->n; ++i) {
@@ -228,8 +193,6 @@ void printTable(DistanceTable *table) {
                     printf("%-15s ", table->cities[i - 1]);
                     continue;
                 }
-
-
                 distance = findDistance(table, i - 1, j - 1);
                 if (distance != NULL) {
                     printf("%-15d", distance->dist);
@@ -240,7 +203,6 @@ void printTable(DistanceTable *table) {
             }
         }
         printf("\n");
-
     }
 }
 
@@ -251,8 +213,7 @@ int cityNameIndex(DistanceTable *table, char *name) {
     return -1;
 }
 
-//TODO check if numbers have changed -> if so return 1
-void modifyTable(DistanceTable *table) {
+int modifyTable(DistanceTable *table) {
 
     char from[40];
     int fromIndex = -1;
@@ -294,6 +255,7 @@ void modifyTable(DistanceTable *table) {
     Distance *atob = findDistance(table, fromIndex, toIndex);
     Distance *btoa = findDistance(table, toIndex, fromIndex);
 
+    int oldAtoB = atob->dist, oldBtoA = btoa->dist;
     int newAtoB = -1, newBtoA = -1;
 
     printf("Current distances:\n");
@@ -314,6 +276,11 @@ void modifyTable(DistanceTable *table) {
         while (getchar() != '\n');
     }
 
+    if (newAtoB == oldAtoB && newBtoA == oldBtoA) {
+        printf("\nNo changes have been made.\n");
+        return 0;
+    }
+
     printf("\nNew distances:\n");
     printf("%s -> %s = %d\n", from, to, newAtoB);
     printf("%s <- %s = %d\n", from, to, newBtoA);
@@ -321,7 +288,7 @@ void modifyTable(DistanceTable *table) {
     atob->dist = newAtoB;
     btoa->dist = newBtoA;
 
-    //printTable(table);
+    return 1;
 }
 
 int recursiveHeuristicCalculation(DistanceTable *distanceTable, int *field, int *way, int size, int pos, int oldDistance) {
@@ -372,9 +339,11 @@ void heuristicCalc(DistanceTable *distanceTable) {
     int startCity = selectCity(distanceTable);
     int cities[distanceTable->n + 1];
     int field[distanceTable->n];
+
     for (int i = 0; i < distanceTable->n; i++) field[i] = i;
     field[startCity] = -1;
     cities[0] = startCity;
+
     int distance = recursiveHeuristicCalculation(distanceTable, field, cities, distanceTable->n, 1, 0);
     printRoute(distanceTable, startCity, cities);
     printf("\nDistance: %d\n", distance);
@@ -396,7 +365,6 @@ void swap(int *arr, int i, int j) {
 }
 
 void permute(DistanceTable *table, int *cities, int i, int length, int *shortest, int *dist) {
-
     if (length == i) {
         int currentDist = calculateDistance(table, cities);
         if (*dist > currentDist) {
@@ -413,8 +381,6 @@ void permute(DistanceTable *table, int *cities, int i, int length, int *shortest
         permute(table, cities, i + 1, length, shortest, dist);
         swap(cities, i, j);
     }
-
-    return;
 }
 
 void calculateBestRoute(DistanceTable *table) {
@@ -429,7 +395,6 @@ void calculateBestRoute(DistanceTable *table) {
     }
 
     int bestDist = calculateDistance(table, shortest);
-
     permute(table, cities, 0, table->n, shortest, &bestDist);
 
     int startCityIndex = -1;
@@ -465,43 +430,44 @@ int main() {
     table.n = 0;
 
     int end = 0;
-
-    //TODO REMOVE
-    //loadDataTxT(&table, "data.txt");
-    //loadDataTxT(&table, "data_2.txt");
-    loadDataTxT(&table, "data_12.txt");
-    printTable(&table);
-    //readFile(&table);
-    //modifyTable(&testTable);
-    calculateBestRoute(&table);
-    //TODO END
+    int modified = 0;
 
     while (end == 0) {
         int switchNum = -1;
-        printf("-------------\nOperations:\n1. End Program\n2. Read File\n3. Display Table\n4. Modify Table\n5. Save Table\n6. Heuristic Calculation for the shortest Route\n7. Exact Calculation for the shortest Route\n\nType the number of your operation:");
+        printf("-------------\nOperations:\n1. Read File\n2. Display Table\n3. Modify Table\n4. Save Table\n5. Heuristic Calculation for the shortest Route\n6. Exact Calculation for the shortest Route\n7. End Program\n\nType the number of your operation:");
         scanf("%d", &switchNum);
         while (getchar() != '\n');
         switch (switchNum) {
-            case 6:
-                if (isTableLoaded(&table)) heuristicCalc(&table);
-                break;
-            case 7:
-                calculateBestRoute(&table);
-                break;
-            case 5:
-                if (isTableLoaded(&table)) saveTable(&table);
-                break;
-            case 4:
-                if (isTableLoaded(&table)) modifyTable(&table);
-                break;
-            case 3:
-                if (isTableLoaded(&table)) printTable(&table);
-                break;
-            case 2:
+            case 1:
                 readFile(&table, cityLimit);
                 break;
-            case 1:
-                //TODO end Prgrom poperly! (Unsaved changes / delete stuff!)
+            case 2:
+                if (isTableLoaded(&table)) printTable(&table);
+                break;
+            case 3:
+                if (isTableLoaded(&table) && modifyTable(&table)) modified = 1;
+                break;
+            case 4:
+                if (isTableLoaded(&table)) saveTable(&table);
+                break;
+            case 5:
+                if (isTableLoaded(&table)) heuristicCalc(&table);
+                break;
+            case 6:
+                calculateBestRoute(&table);
+                break;
+            case 7:
+                if (modified) {
+                    printf("You have unsaved changes.");
+                    char selection = 'E';
+                    while (selection != 121 && selection != 89 && selection != 110 && selection != 78) {
+                        printf("\n%d\n", selection);
+                        printf("\n Do you want to return to the Menu? [y/n]: ");
+                        scanf(" %c", &selection);
+                        while (getchar() != '\n');
+                    }
+                    if (selection == 121 || selection == 89) break;
+                }
                 printf("Ending Program...\n");
                 end = 1;
                 break;
