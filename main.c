@@ -300,13 +300,13 @@ void modifyTable(DistanceTable *table) {
 
     printf("Please now enter the new distances:\n");
 
-    while (newAtoB == -1 && newAtoB < 0) {
+    while (newAtoB < 0) {
         printf("\n%s -> %s: ", from, to);
         scanf("%d", &newAtoB);
         while (getchar() != '\n');
     }
 
-    while (newBtoA == -1 && newBtoA < 0) {
+    while (newBtoA < 0) {
         printf("\n%s <- %s: ", from, to);
         scanf("%d", &newBtoA);
         while (getchar() != '\n');
@@ -332,14 +332,6 @@ int main() {
     table.n = 0;
 
     int end = 0;
-
-    //TODO REMOVE
-    //loadDataTxT(&table, "data.txt");
-    //printTable(&table);
-    //readFile(&table);
-    //modifyTable(&testTable);
-    //TODO END
-
     while (end == 0) {
         int switchNum = -1;
         printf("-------------\nOperations:\n1. End Program\n2. Read File\n3. Display Table\n4. Modify Table\n5. Save Table\n\nType the number of your operation:");
