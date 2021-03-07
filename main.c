@@ -125,7 +125,7 @@ FILE *loadFilePrompt(char *mode) {
 }
 
 //TODO remove
-void loadDataTxT(DistanceTable *distanceTable, char *fileName) {
+void loadDataTxT(DistanceTable *distanceTable, const char *fileName) {
     FILE *fptr;
 
     //FIXME remove when finishing the project
@@ -146,7 +146,7 @@ void loadDataTxT(DistanceTable *distanceTable, char *fileName) {
     printf("%d Cities loaded!\n", distanceTable->n);
 }
 
-void readFile(DistanceTable *distanceTable) {
+void readFile(DistanceTable *distanceTable, int cityLimit) {
     FILE *fptr = NULL;
 
     fptr = loadFilePrompt("r+");
@@ -155,17 +155,22 @@ void readFile(DistanceTable *distanceTable) {
         printf("Error!\nFile could not be found, is protected or read-only!\n");
         return;
     }
-    int cityLimit = 50;
     distanceTable->distance = malloc(cityLimit * cityLimit * sizeof(Distance));
     distanceTable->cities = malloc(cityLimit * sizeof(char *));
     for (int i = 0; i < cityLimit; i++) distanceTable->cities[i] = malloc(40 * sizeof(char *));
     distanceTable->n = 0;
     parseData(fptr, distanceTable);
     fclose(fptr);
-    printf("Data successfully loaded!\n");
+    if (distanceTable->n == 0) {
+        printf("No cities found. Table cleared");
+        return;
+    }
+    printf("%d Cities successfully loaded!\n", distanceTable->n);
 }
 
 Distance *findDistance(DistanceTable *table, int from, int to) {
+    int a = from*table->n+to;
+    if (table->distance[a].from == from && table->distance[a].to == to) return &table->distance[a];
     for (int i = 0; i < table->n * table->n; ++i) {
         if (table->distance[i].from == from && table->distance[i].to == to) return &table->distance[i];
     }
@@ -363,7 +368,7 @@ int main() {
                 printTable(&table);
                 break;
             case 2:
-                readFile(&table);
+                readFile(&table, cityLimit);
                 break;
             case 1:
                 printf("Ending Program...\n");
