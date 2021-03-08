@@ -1,23 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void test(int *arr) {
+    free(arr);
+    arr = malloc(1*sizeof(int));
+    arr[0] = 12;
+    arr = realloc(arr, 4*sizeof(int));
+    arr[1] = 3;
+    arr[2] = 1;
+    arr[3] = 53;
+}
+
 int maini() {
-    const int bufSize = 32;
-    char **splitStrings;
+    int *other = malloc(1*sizeof(int));
 
-    splitStrings = malloc(bufSize*sizeof(char*));
+    test(other);
 
-    for (int i=0;i<bufSize;i++){
-        splitStrings[i]=malloc(bufSize*sizeof(char*));
-    }
+    printf("%d",other[3]);
 
-    splitStrings[0][0] = 'a';
-    splitStrings[0][1] = '\0';
-
-    printf("testchar: %c\n", splitStrings[0][0]);
-    printf("teststr: %s\n", splitStrings[0]);
-
-    free(splitStrings);
-
+    free(other);
     return 0;
 }
