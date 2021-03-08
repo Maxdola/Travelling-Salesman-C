@@ -62,24 +62,23 @@ void strToStrPtr(char **strPtr, const char *string, int stringLength) {
  * Converts a line of numbers as String to Distance structs
  * @param distances the array of Distances the new Distances are saved to
  * @param string the line containing the String numbers
+ * @param stringLen length of {@param string}
  * @param city the city the distances are from
  * @param n the total amount of cities
  * @return the amount of new Distances added to {@param distances}
  */
-int strToIntPtr(Distance *distances, const char *string, int city, int n) {
+int strToIntPtr(Distance *distances, const char *string, int stringLen, int city, int n) {
     int size = 1;
-    int i = 0;
-    while (string[i] != 0) {
+    for (int i = 0; i < stringLen; ++i) {
         if (string[i] < 58 && string[i] > 47) {
             int value = 0;
             while (string[i] < 58 && string[i] > 47) {
-                value = (value * 10) + (string[i++] - 48);
+                value = (value * 10) + (string[i++] -48);
+                if (i >= stringLen) break;
             }
             Distance dist = {city, size - 1, value};
             distances[(city * n) + (size) - 1] = dist;
             size++;
-        } else {
-            i++;
         }
     }
     return size - 1;
@@ -97,7 +96,6 @@ void parseData(FILE *file, DistanceTable *distanceTable) {
     int lineNum = -1;
     int writtenDistances = 0;
     while ((currentChar = fgetc(file)) != EOF) {
-        currentLine = realloc(currentLine, (++sizeCL) * sizeof(char));
         if (currentChar == '\n') {
             if (lineNum == -1) {
                 char **strPtr = malloc(1 * sizeof(char));
@@ -105,24 +103,26 @@ void parseData(FILE *file, DistanceTable *distanceTable) {
                 strToStrPtr(distanceTable->cities, currentLine, sizeCL);
                 free(strPtr);
             } else {
-                int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
+                int size = strToIntPtr(distanceTable->distance, currentLine, sizeCL, lineNum, distanceTable->n);
                 if (size != distanceTable->n) {
                     printf("Table not correctly formatted!\n");
-                    exit(0);
+                    return;
                 }
                 writtenDistances += size;
             }
             lineNum++;
             sizeCL = 1;
+        } else {
+            currentLine = realloc(currentLine, (++sizeCL) * sizeof(char));
+            currentLine[sizeCL - 1] = (char) currentChar;
         }
-        currentLine[sizeCL - 1] = (char) currentChar;
     }
     if (writtenDistances != distanceTable->n * distanceTable->n) {
-        int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
+        int size = strToIntPtr(distanceTable->distance, currentLine, sizeCL, lineNum, distanceTable->n);
         if (size != distanceTable->n) {
             printf("Table not correctly formatted!\n");
             free(currentLine);
-            exit(0);
+            return;
         }
     }
     free(currentLine);
@@ -157,6 +157,9 @@ void readFile(DistanceTable *distanceTable, int cityLimit) {
         printf("Error!\nFile could not be found, is protected or read-only!\n");
         return;
     }
+    for (int i = 0; i < cityLimit; i++) free(distanceTable->cities[i]);
+    free(distanceTable->distance);
+    free(distanceTable->cities);
     distanceTable->distance = malloc(cityLimit * cityLimit * sizeof(Distance));
     distanceTable->cities = malloc(cityLimit * sizeof(char *));
     for (int i = 0; i < cityLimit; i++) distanceTable->cities[i] = malloc(40 * sizeof(char *));
@@ -591,6 +594,9 @@ int main() {
                     }
                     if (selection == 121 || selection == 89) break;
                 }
+                for (int i = 0; i < cityLimit; i++) free(table.cities[i]);
+                free(table.distance);
+                free(table.cities);
                 printf("Ending Program...\n");
                 end = 1;
                 break;
