@@ -121,9 +121,11 @@ void parseData(FILE *file, DistanceTable *distanceTable) {
         int size = strToIntPtr(distanceTable->distance, currentLine, lineNum, distanceTable->n);
         if (size != distanceTable->n) {
             printf("Table not correctly formatted!\n");
+            free(currentLine);
             exit(0);
         }
     }
+    free(currentLine);
 }
 
 /**
