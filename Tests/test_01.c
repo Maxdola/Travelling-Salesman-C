@@ -2,8 +2,6 @@
 #include <stdlib.h>
 
 void test(int *arr) {
-    free(arr);
-    arr = malloc(1*sizeof(int));
     arr[0] = 12;
     arr = realloc(arr, 4*sizeof(int));
     arr[1] = 3;

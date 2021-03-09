@@ -192,14 +192,16 @@ Distance *findDistance(DistanceTable *table, int from, int to) {
 /**
  * Handles the process of asking the user for a file and saving the DistanceTable
  * @param table the DistanceTable to be saved
+ * @return 0: nothing has been saved
+ * @return 1: data saved successfully
  */
-void saveTable(DistanceTable *table) {
+int saveTable(DistanceTable *table) {
     FILE *fptr;
     fptr = loadFilePrompt("w+");
 
     if (fptr == NULL) {
         printf("Failed to open requested file.\n");
-        return;
+        return 0;
     }
 
     Distance *distance = NULL;
@@ -222,6 +224,7 @@ void saveTable(DistanceTable *table) {
     }
 
     fclose(fptr);
+    return 1;
 }
 
 /**
@@ -574,20 +577,19 @@ int main() {
                 if (isTableLoaded(&table) && modifyTable(&table)) modified = 1;
                 break;
             case 4:
-                if (isTableLoaded(&table)) saveTable(&table);
+                if (isTableLoaded(&table) && saveTable(&table)) modified = 0;
                 break;
             case 5:
                 if (isTableLoaded(&table)) heuristicCalc(&table);
                 break;
             case 6:
-                calculateBestRoute(&table);
+                if (isTableLoaded(&table)) calculateBestRoute(&table);
                 break;
             case 7:
                 if (modified) {
                     printf("You have unsaved changes.");
                     char selection = 'E';
                     while (selection != 121 && selection != 89 && selection != 110 && selection != 78) {
-                        printf("\n%d\n", selection);
                         printf("\n Do you want to return to the Menu? [y/n]: ");
                         scanf(" %c", &selection);
                         while (getchar() != '\n');
